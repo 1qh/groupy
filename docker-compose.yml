@@ -1,0 +1,24 @@
+services:
+  web:
+    image: python:alpine
+    volumes:
+      - ./app:/app
+    working_dir: /app
+    expose:
+      - 8000
+    entrypoint: ["/bin/sh","-c"]
+    command:
+    - |
+      pip install djangorestframework django-cors-headers Pillow uvicorn
+      python manage.py makemigrations base
+      python manage.py migrate
+      python manage.py collectstatic --noinput
+      uvicorn groupy.asgi:application --host 0.0.0.0
+  nginx:
+    image: nginx:alpine
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+    ports:
+      - 80:80
+    depends_on:
+      - web
